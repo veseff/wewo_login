@@ -1,5 +1,6 @@
 from getpass import getpass
 from datetime import datetime
+import hashlib
 
 
 # crea un usuario
@@ -71,6 +72,10 @@ def cambiar_contraseña():
 
     return nueva_contraseña
 
+def hash_contraseña(contraseña):
+    return hashlib.sha256(
+        contraseña.encode()
+    ).hexdigest()
 
 # registra un usuario nuevo
 def registrar_usuario():
@@ -85,7 +90,9 @@ def registrar_usuario():
     contraseña = crear_contraseña()
 
     with open("usuarios.txt", "a") as archivo:
-        archivo.write(f"{usuario} + {contraseña}\n")
+        archivo.write(
+        f"{usuario} + {hash_contraseña(contraseña)}\n"
+    )
 
     print("Usuario registrado correctamente")
 
@@ -119,7 +126,7 @@ def actualizar_contraseña(usuario_buscado, nueva_contraseña):
 
             if usuario == usuario_buscado:
                 lineas_actualizadas.append(
-                    f"{usuario} + {nueva_contraseña}\n"
+                    f"{usuario} + {hash_contraseña(nueva_contraseña)}\n"
                 )
             else:
                 lineas_actualizadas.append(linea)
@@ -139,8 +146,9 @@ def iniciar_sesion():
 
         if (
             contraseña_guardada is not None
-            and contraseña == contraseña_guardada
-        ):
+            and hash_contraseña(contraseña)
+                == contraseña_guardada
+):
 
             print(f"Bienvenido {usuario}")
             print(f"Iniciaste sesión en el intento {i + 1}")
