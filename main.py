@@ -91,17 +91,67 @@ def iniciar_sesion(usuario_registrado, contraseña_correcta):
 
     return False, None
 
+def registrar_usuario():
 
-usuario_registrado = crear_usuario()
-contraseña_correcta = crear_contraseña()
+    usuario = crear_usuario()
+    contraseña = crear_contraseña()
+
+    with open("usuarios.txt", "a") as archivo:
+        archivo.write(f"{usuario} + {contraseña}\n")
+
+    print("Usuario registrado correctamente")
 
 #logs de los registro
 def registrar_log(texto):
     with open("log.txt", "a") as archivo:
-        archivo.write(f"{usuario} - {datetime.now()}\n")
+        archivo.write(f"{texto} - {datetime.now()}\n")
 
-with open("usuarios.txt", "a") as archivo:
-    archivo.write(f"{usuario_registrado} + {contraseña_correcta}\n")
+
+print("1. Registrarse")
+print("2. Iniciar sesión")
+
+opcion_menu = input("Seleccione una opción: ")
+
+if opcion_menu == "1":
+
+    registrar_usuario()
+
+elif opcion_menu == "2":
+
+    usuario_registrado = crear_usuario()
+    contraseña_correcta = crear_contraseña()
+
+    print("La contraseña tiene", len(contraseña_correcta), "caracteres")
+
+    confirmacion, usuario = iniciar_sesion(
+        usuario_registrado,
+        contraseña_correcta
+    )
+
+    if confirmacion:
+
+        opcion = input(
+            "¿Desea cambiar la contraseña? (s/n): "
+        ).lower()
+
+        if opcion == "s":
+            contraseña_correcta = cambiar_contraseña()
+
+        elif opcion == "n":
+            print("La contraseña no fue modificada")
+
+        else:
+            print("Opción inválida")
+
+    if confirmacion:
+        registrar_log(usuario)
+    else:
+        print("Se agotaron los intentos")
+        registrar_log("Intento fallido")
+
+else:
+    print("Opción inválida")
+
 
 print("La contraseña tiene", len(contraseña_correcta), "caracteres")
 
@@ -125,8 +175,7 @@ if confirmacion:
         print("Opción inválida")
 #registra los log
 if confirmacion:
-    registrar_log()
+    registrar_log(usuario)
 else:
     print("Se agotaron los intentos")
-    with open("log.txt", "a") as archivo:
-        archivo.write(f"Intento fallido - {datetime.now()}\n")
+    registrar_log("Intento fallido")
