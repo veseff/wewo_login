@@ -44,6 +44,8 @@ def registrar_usuario():
 
     print("Usuario registrado correctamente")
 
+    return usuario
+
 # busca un usuario en usuarios.txt
 def buscar_usuario(usuario_buscado):
 
