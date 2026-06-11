@@ -1,5 +1,8 @@
 from seguridad import *
-
+from logs import (
+    registrar_log,
+    ver_historial
+    )
 # crea un usuario
 def crear_usuario():
     usuario = input("Crea un usuario: ").strip()
@@ -15,15 +18,28 @@ def registrar_usuario():
     usuario = crear_usuario()
 
     while buscar_usuario(usuario) is not None:
+
         usuario = input(
-        "Ese usuario ya existe. Elija otro: "
-    ).strip()
+            "Ese usuario ya existe. Elija otro: "
+        ).strip()
 
     contraseña = crear_contraseña()
 
+    salt = generar_salt()
+
+    hash_guardado = hash_contraseña(
+        contraseña,
+        salt
+    )
+
     with open("usuarios.txt", "a") as archivo:
+
         archivo.write(
-        f"{usuario} + {hash_contraseña(contraseña)}\n"
+            f"{usuario} + {salt} + {hash_guardado}\n"
+        )
+
+    registrar_log(
+        f"USUARIO CREADO - {usuario}"
     )
 
     print("Usuario registrado correctamente")
@@ -32,21 +48,30 @@ def registrar_usuario():
 def buscar_usuario(usuario_buscado):
 
     try:
+
         with open("usuarios.txt", "r") as archivo:
 
             for linea in archivo:
-                usuario, contraseña = linea.strip().split(" + ")
+
+                usuario, salt, hash_guardado = (
+                    linea.strip().split(" + ")
+                )
 
                 if usuario == usuario_buscado:
-                    return contraseña
+
+                    return salt, hash_guardado
 
     except FileNotFoundError:
+
         return None
 
     return None
 
 # actualiza la contraseña de un usuario
-def actualizar_contraseña(usuario_buscado, nueva_contraseña):
+def actualizar_contraseña(
+    usuario_buscado,
+    nueva_contraseña
+):
 
     lineas_actualizadas = []
 
@@ -54,43 +79,77 @@ def actualizar_contraseña(usuario_buscado, nueva_contraseña):
 
         for linea in archivo:
 
-            usuario, contraseña = linea.strip().split(" + ")
+            usuario, salt, hash_guardado = (
+                linea.strip().split(" + ")
+            )
 
             if usuario == usuario_buscado:
-                lineas_actualizadas.append(
-                    f"{usuario} + {hash_contraseña(nueva_contraseña)}\n"
+
+                nuevo_salt = generar_salt()
+
+                nuevo_hash = hash_contraseña(
+                    nueva_contraseña,
+                    nuevo_salt
                 )
+
+                lineas_actualizadas.append(
+                    f"{usuario} + {nuevo_salt} + {nuevo_hash}\n"
+                )
+
             else:
-                lineas_actualizadas.append(linea)
+
+                lineas_actualizadas.append(
+                    linea
+                )
 
     with open("usuarios.txt", "w") as archivo:
-        archivo.writelines(lineas_actualizadas)
+
+        archivo.writelines(
+            lineas_actualizadas
+        )
 
 # sistema de login
 def iniciar_sesion():
 
-    for i in range(3):
+    max_intentos = 3
 
-        usuario = input("Ingrese su usuario: ").strip()
-        contraseña = getpass("Ingrese su contraseña: ")
+    for i in range(max_intentos):
 
-        contraseña_guardada = buscar_usuario(usuario)
+        usuario = input(
+            "Ingrese su usuario: "
+        ).strip()
 
-        if (
-            contraseña_guardada is not None
-            and hash_contraseña(contraseña)
-                == contraseña_guardada
-):
+        contraseña = getpass(
+            "Ingrese su contraseña: "
+        )
 
-            print(f"Bienvenido {usuario}")
-            print(f"Iniciaste sesión en el intento {i + 1}")
+        datos = buscar_usuario(usuario)
 
-            return True, usuario
+        if datos is not None:
 
-        if i < 2:
-            print(f"Te quedan {2 - i} intentos")
+            salt, hash_guardado = datos
 
-        print("Usuario o contraseña incorrectos")
+            if (
+                hash_contraseña(
+                    contraseña,
+                    salt
+                )
+                == hash_guardado
+            ):
+
+                print(f"Bienvenido {usuario}")
+
+                return True, usuario
+
+        print(
+            "Usuario o contraseña incorrectos"
+        )
+
+        if i < max_intentos - 1:
+
+            print(
+                f"Te quedan {max_intentos - 1 - i} intentos"
+            )
 
     return False, None
 
@@ -118,3 +177,81 @@ def cambiar_contraseña():
     print("Contraseña cambiada correctamente")
 
     return nueva_contraseña
+
+def eliminar_usuario(usuario_buscado):
+
+    lineas = []
+
+    with open("usuarios.txt", "r") as archivo:
+
+        for linea in archivo:
+
+            usuario, contraseña = (
+                linea.strip().split(" + ")
+            )
+
+            if usuario != usuario_buscado:
+                lineas.append(linea)
+
+    with open("usuarios.txt", "w") as archivo:
+        archivo.writelines(lineas)
+
+def menu_usuario(usuario):
+
+    while True:
+
+        print("\n=== MENÚ USUARIO ===")
+        print("1. Cambiar contraseña")
+        print("2. Ver historial")
+        print("3. Eliminar usuario")
+        print("4. Cerrar sesión")
+
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+
+            nueva = cambiar_contraseña()
+
+            actualizar_contraseña(
+                usuario,
+                nueva
+            )
+
+            registrar_log(
+                f"CAMBIO CONTRASEÑA - {usuario}"
+            )
+
+        elif opcion == "2":
+
+            ver_historial()
+
+        elif opcion == "3":
+
+            confirmar = input(
+                "¿Seguro? (s/n): "
+            ).lower()
+
+            if confirmar == "s":
+
+                eliminar_usuario(usuario)
+
+                registrar_log(
+                    f"USUARIO ELIMINADO - {usuario}"
+                )
+
+                print("Usuario eliminado")
+
+                break
+
+        elif opcion == "4":
+
+            registrar_log(
+                f"CIERRE SESIÓN - {usuario}"
+            )
+
+            print("Sesión cerrada")
+
+            break
+
+        else:
+            print("Opción inválida")

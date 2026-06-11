@@ -1,7 +1,12 @@
 from getpass import getpass
 import hashlib
+import secrets
 
-# valida una contraseña
+
+def generar_salt():
+    return secrets.token_hex(16)
+
+
 def validar_contraseña(contraseña):
     return (
         len(contraseña) >= 8
@@ -11,11 +16,13 @@ def validar_contraseña(contraseña):
         and any(not c.isalnum() for c in contraseña)
     )
 
-# crea una contraseña
+
 def crear_contraseña():
+
     contraseña = getpass("Crea una contraseña: ")
 
     while not validar_contraseña(contraseña):
+
         print("La contraseña debe tener:")
         print("- 8 caracteres mínimo")
         print("- Una mayúscula")
@@ -28,12 +35,16 @@ def crear_contraseña():
     repetir = getpass("Repite la contraseña: ")
 
     while repetir != contraseña:
+
         print("Las contraseñas no coinciden")
+
         repetir = getpass("Repite la contraseña: ")
 
     return contraseña
 
-def hash_contraseña(contraseña):
+
+def hash_contraseña(contraseña, salt):
+
     return hashlib.sha256(
-        contraseña.encode()
+        (salt + contraseña).encode()
     ).hexdigest()

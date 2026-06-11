@@ -1,6 +1,11 @@
-from usuarios import *
-from seguridad import *
-from logs import *
+from usuarios import (
+    registrar_usuario,
+    iniciar_sesion,
+    cambiar_contraseña,
+    actualizar_contraseña,
+    menu_usuario
+)
+from logs import registrar_log
 
 # menú principal
 print("1. Registrarse")
@@ -18,31 +23,16 @@ elif opcion_menu == "2":
 
     if confirmacion:
 
-        opcion = input(
-            "¿Desea cambiar la contraseña? (s/n): "
-        ).lower()
+        registrar_log(
+            f"LOGIN EXITOSO - {usuario}"
+        )
 
-        if opcion == "s":
+        menu_usuario(usuario)
 
-            nueva_contraseña = cambiar_contraseña()
-
-            actualizar_contraseña(
-                usuario,
-                nueva_contraseña
-            )
-            print("Contraseña guardada correctamente")
-
-        elif opcion == "n":
-            print("La contraseña no fue modificada")
-
-        else:
-            print("Opción inválida")
-
-    if confirmacion:
-        registrar_log(usuario)
     else:
-        print("Se agotaron los intentos")
-        registrar_log("Intento fallido")
 
-else:
-    print("Opción inválida")
+        registrar_log(
+            "LOGIN FALLIDO"
+        )
+
+        print("Se agotaron los intentos")
