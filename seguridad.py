@@ -1,10 +1,18 @@
 from getpass import getpass
 import hashlib
 import secrets
+import re
+
+
+PBKDF2_ITERACIONES = 200_000
 
 
 def generar_salt():
     return secrets.token_hex(16)
+
+
+def validar_usuario(usuario):
+    return re.fullmatch(r"[A-Za-z0-9_-]{3,20}", usuario) is not None
 
 
 def validar_contraseña(contraseña):
@@ -44,7 +52,33 @@ def crear_contraseña():
 
 
 def hash_contraseña(contraseña, salt):
+    hash_guardado = hashlib.pbkdf2_hmac(
+        "sha256",
+        contraseña.encode(),
+        salt.encode(),
+        PBKDF2_ITERACIONES
+    ).hex()
 
-    return hashlib.sha256(
+    return f"pbkdf2_sha256${PBKDF2_ITERACIONES}${hash_guardado}"
+
+
+def verificar_contraseña(contraseña, salt, hash_guardado):
+    partes = hash_guardado.split("$")
+
+    if len(partes) == 3 and partes[0] == "pbkdf2_sha256":
+        iteraciones = int(partes[1])
+        hash_calculado = hashlib.pbkdf2_hmac(
+            "sha256",
+            contraseña.encode(),
+            salt.encode(),
+            iteraciones
+        ).hex()
+
+        return secrets.compare_digest(hash_calculado, partes[2])
+
+    # Compatibilidad con usuarios creados antes, usando sha256 simple.
+    hash_viejo = hashlib.sha256(
         (salt + contraseña).encode()
     ).hexdigest()
+
+    return secrets.compare_digest(hash_viejo, hash_guardado)

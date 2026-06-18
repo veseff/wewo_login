@@ -1,8 +1,6 @@
 from usuarios import (
     registrar_usuario,
     iniciar_sesion,
-    cambiar_contraseña,
-    actualizar_contraseña,
     menu_usuario
 )
 from logs import registrar_log
@@ -40,7 +38,7 @@ if opcion_menu == "1":
             else:
 
                 registrar_log(
-                    "LOGIN FALLIDO"
+                    f"LOGIN FALLIDO FINAL - {usuario}"
                 )
 
                 print("Se agotaron los intentos")
@@ -62,7 +60,7 @@ elif opcion_menu == "2":
     else:
 
         registrar_log(
-            "LOGIN FALLIDO"
+            f"LOGIN FALLIDO FINAL - {usuario}"
         )
 
         print("Se agotaron los intentos")
