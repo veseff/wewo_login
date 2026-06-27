@@ -10,7 +10,7 @@ def abrir_log(modo):
     def opener(ruta, flags):
         return os.open(ruta, flags, 0o600)
 
-    archivo = open(ARCHIVO_LOG, modo, opener=opener)
+    archivo = open(ARCHIVO_LOG, modo, encoding="utf-8", opener=opener)
     os.chmod(ARCHIVO_LOG, 0o600)
     return archivo
 

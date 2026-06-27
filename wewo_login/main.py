@@ -5,56 +5,8 @@ from usuarios import (
 )
 from logs import registrar_log
 
-# menú principal
-print("1. Registrarse")
-print("2. Iniciar sesión")
 
-opcion_menu = input("Seleccione una opción: ")
-
-if opcion_menu == "1":
-
-    usuario = registrar_usuario()
-
-    while True:
-
-        print("\n¿Qué desea hacer?")
-        print("1. Iniciar sesión")
-        print("2. Salir")
-
-        opcion = input("Seleccione una opción: ")
-
-        if opcion == "1":
-
-            confirmacion, usuario = iniciar_sesion()
-
-            if confirmacion:
-
-                registrar_log(
-                    f"LOGIN EXITOSO - {usuario}"
-                )
-
-                menu_usuario(usuario)
-
-            else:
-
-                registrar_log(
-                    f"LOGIN FALLIDO FINAL - {usuario}"
-                )
-
-                print("Se agotaron los intentos")
-
-            break
-
-        elif opcion == "2":
-
-            break
-
-        else:
-
-            print("Opción inválida")
-
-elif opcion_menu == "2":
-
+def procesar_login():
     confirmacion, usuario = iniciar_sesion()
 
     if confirmacion:
@@ -73,6 +25,47 @@ elif opcion_menu == "2":
 
         print("Se agotaron los intentos")
 
-else:
 
-    print("Opción inválida")
+def main():
+    # menú principal
+    print("1. Registrarse")
+    print("2. Iniciar sesión")
+
+    opcion_menu = input("Seleccione una opción: ")
+
+    if opcion_menu == "1":
+
+        registrar_usuario()
+
+        while True:
+
+            print("\n¿Qué desea hacer?")
+            print("1. Iniciar sesión")
+            print("2. Salir")
+
+            opcion = input("Seleccione una opción: ")
+
+            if opcion == "1":
+
+                procesar_login()
+                break
+
+            elif opcion == "2":
+
+                break
+
+            else:
+
+                print("Opción inválida")
+
+    elif opcion_menu == "2":
+
+        procesar_login()
+
+    else:
+
+        print("Opción inválida")
+
+
+if __name__ == "__main__":
+    main()
